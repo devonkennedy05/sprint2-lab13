@@ -20,8 +20,34 @@ public class PayoutRequest {
     public Long getMerchantId() { return merchantId; }
     public Long getRequestedByUserId() { return requestedByUserId; }
     public String getApprovalStatus() { return approvalStatus; }
-    public void setApprovalStatus(String s) { this.approvalStatus = s; }
     public Long getApprovedByUserId() { return approvedByUserId; }
-    public void setApprovedByUserId(Long id) { this.approvedByUserId = id; }
     public double getAmount() { return amount; }
+
+    // Enforces the PENDING -> APPROVED transition and blocks self-approval instead of trusting callers.
+    public void approve(Long approvingUserId) {
+        if (!"PENDING".equals(approvalStatus)) {
+            throw new IllegalStateException("Only pending payouts can be approved");
+        }
+        if (approvingUserId == null || approvingUserId.equals(requestedByUserId)) {
+            throw new IllegalArgumentException("A payout cannot be approved by its requester");
+        }
+        this.approvalStatus = "APPROVED";
+        this.approvedByUserId = approvingUserId;
+    }
+
+    public void reject(Long rejectingUserId) {
+        if (!"PENDING".equals(approvalStatus)) {
+            throw new IllegalStateException("Only pending payouts can be rejected");
+        }
+        this.approvalStatus = "REJECTED";
+        this.approvedByUserId = rejectingUserId;
+    }
+
+    // Only an already-approved payout may be marked paid; the approver identity is never overwritten.
+    public void markPaid() {
+        if (!"APPROVED".equals(approvalStatus)) {
+            throw new IllegalStateException("Only approved payouts can be marked paid");
+        }
+        this.approvalStatus = "PAID";
+    }
 }
