@@ -10,6 +10,7 @@
 - BatchPayoutJob.java
 - MerchantController.java
 - PaymentStatusEvent.java
+- pom.xml
 
 #### Brian
 - PayoutRepository.java
@@ -25,6 +26,13 @@ Include:
 - The Problem Present
 - Real-World Risk in English
 - What the Fix Was
+
+### Pom.xml
+- Lines 25-29
+- A06:2025 – Vulnerable and Outdated Components
+- log4j-core is pinned to version 2.14.1, which is an old vulnerable release.
+- If attacker-controlled data gets logged, this dependency can expose the app to severe compromise, including remote code execution in some scenarios.
+- Remove log4j-core if it is not needed, or upgrade it to a current safe version and rely on the supported Spring Boot logging setup.
 
 ### BatchPayoutJob.java
 - Lines 22-26
